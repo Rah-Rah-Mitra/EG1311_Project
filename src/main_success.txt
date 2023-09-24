@@ -1,0 +1,68 @@
+
+#include "Arduino.h"
+#include "motorControl.h"
+
+//Motor_1 Connection
+#define ENABLE_1 11
+#define MOTOR_1_A 10
+#define MOTOR_1_B 9
+//Motor_2 Connection
+#define ENABLE_2 5
+#define MOTOR_2_A 4
+#define MOTOR_2_B 3
+//other variables
+char serial_data;
+int speed_value_m1;
+int speed_value_m2;
+
+
+void setup() {
+  // Set the motor control pins as outputs
+  pinMode(ENABLE_1, OUTPUT);
+  pinMode(MOTOR_1_A, OUTPUT);
+  pinMode(MOTOR_1_B, OUTPUT);
+  pinMode(ENABLE_2, OUTPUT);
+  pinMode(MOTOR_2_A, OUTPUT);
+  pinMode(MOTOR_2_B, OUTPUT);
+
+  // Start the serial communication for debugging purposes
+  Serial.begin(9600);
+}
+
+void loop() {
+  static unsigned long lastChange = 0;
+  static char state = 'F';
+
+  if (millis() - lastChange > 5000) { // Change state every 5 seconds
+    lastChange = millis();
+
+    // Control the motors based on the state
+    switch (state) {
+      case 'F': // Forward
+        digitalWrite(MOTOR_1_A, HIGH);
+        digitalWrite(MOTOR_1_B, LOW);
+        analogWrite(ENABLE_1, 255); // Full speed
+        digitalWrite(MOTOR_2_A, HIGH);
+        digitalWrite(MOTOR_2_B, LOW);
+        analogWrite(ENABLE_2, 255); // Full speed
+        state = 'B'; // Next state will be Backward
+        break;
+      case 'B': // Backward
+        digitalWrite(MOTOR_1_A, LOW);
+        digitalWrite(MOTOR_1_B, HIGH);
+        analogWrite(ENABLE_1, 255); // Full speed
+        digitalWrite(MOTOR_2_A, LOW);
+        digitalWrite(MOTOR_2_B, HIGH);
+        analogWrite(ENABLE_2, 255); // Full speed
+        state = 'S'; // Next state will be Stop
+        break;
+      case 'S': // Stop
+        digitalWrite(MOTOR_1_A, LOW);
+        digitalWrite(MOTOR_1_B, LOW);
+        digitalWrite(MOTOR_2_A, LOW);
+        digitalWrite(MOTOR_2_B, LOW);
+        state = 'F'; // Next state will be Forward
+        break;
+    }
+  }
+}
