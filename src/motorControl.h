@@ -20,8 +20,8 @@ class MotorControl {
     void turn_right();
     void forward_both_motors();
     void backward_both_motors();
-    void accelerate_both_motors();
-    void decelerate_both_motors();
+    void accelerate_both_motors(int accelerationTime);
+    void decelerate_both_motors(int decelerationTime);
     void stop_both_motors();
   private:
     int _ENABLE_1;

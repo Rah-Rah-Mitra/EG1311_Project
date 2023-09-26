@@ -1,42 +1,65 @@
-
-#include "Arduino.h"
 #include "motorControl.h"
+#include "Arduino.h"
+#include "Servo.h"
 
 //Motor_1 Connection
-#define ENABLE_1 11
-#define MOTOR_1_A 10
-#define MOTOR_1_B 9
-//Motor_2 Connection
-#define ENABLE_2 5
-#define MOTOR_2_A 4
-#define MOTOR_2_B 3
-//other variables
-char serial_data;
-int speed_value_m1;
-int speed_value_m2;
+int ENABLE_1 = 11;
+int MOTOR_1_A = 10;
+int MOTOR_1_B = 9;
 
+//Motor_2 Connection
+int ENABLE_2 = 5;
+int MOTOR_2_A = 4;
+int MOTOR_2_B = 3;
+
+//Ultrasonic Sensor
+int TRIG_PIN = 6;
+int ECHO_PIN = 7;
+
+//Servo Motor
+int SERVO_PIN = 8;
+
+//Constants
+float SPEED_OF_SOUND = 0.0345;
+
+MotorControl motorControl(ENABLE_1 ,MOTOR_1_A ,MOTOR_1_B ,ENABLE_2 ,MOTOR_2_A ,MOTOR_2_B);
+Servo myservo; 
+
+
+float get_distance(int TRIG_PIN , int ECHO_PIN){
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long duration = pulseIn(ECHO_PIN, HIGH);
+  float distance = (duration * 0.0343) / 2;
+  Serial.println("Distance(cm): " + String(distance));
+  return distance;
+}
+
+
+void moveServo() {
+  myservo.write(90);  // tell servo to go to position in variable 'pos'
+  delay(150);          // waits 15ms for the servo to reach the position
+}
 
 void setup() {
-  // Set the motor control pins as outputs
-  pinMode(ENABLE_1, OUTPUT);
-  pinMode(MOTOR_1_A, OUTPUT);
-  pinMode(MOTOR_1_B, OUTPUT);
-  pinMode(ENABLE_2, OUTPUT);
-  pinMode(MOTOR_2_A, OUTPUT);
-  pinMode(MOTOR_2_B, OUTPUT);
-
-  // Start the serial communication for debugging purposes
+  myservo.attach(SERVO_PIN); // initialise servo
+  pinMode(TRIG_PIN, OUTPUT);
+  digitalWrite(TRIG_PIN,LOW);
+  pinMode(ECHO_PIN, INPUT);
   Serial.begin(9600);
 }
 
 void loop() {
-  static unsigned long lastChange = 0;
+static unsigned long lastChange = 0;
   static char state = 'F';
 
   if (millis() - lastChange > 5000) { // Change state every 5 seconds
     lastChange = millis();
 
-    // Control the motors based on the state
+    // Control the motor based on the state
     switch (state) {
       case 'F': // Forward
         digitalWrite(MOTOR_1_A, HIGH);
@@ -59,10 +82,14 @@ void loop() {
       case 'S': // Stop
         digitalWrite(MOTOR_1_A, LOW);
         digitalWrite(MOTOR_1_B, LOW);
+        analogWrite(ENABLE_1, 0);
         digitalWrite(MOTOR_2_A, LOW);
         digitalWrite(MOTOR_2_B, LOW);
+        analogWrite(ENABLE_2, 0); // Full speed
         state = 'F'; // Next state will be Forward
         break;
     }
   }
+  get_distance(TRIG_PIN,ECHO_PIN);
+  moveServo();
 }
