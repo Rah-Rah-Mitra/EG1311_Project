@@ -111,7 +111,7 @@ void MotorControl::forward_both_motors() {
   digitalWrite(_MOTOR_2_B, LOW);
   digitalWrite(_ENABLE_1, HIGH); // Add this line
   digitalWrite(_ENABLE_2, HIGH); // Add this line
-  Serial.println("Motor_1 and Motor_2 Forward Direction");
+  //Serial.println("Motor_1 and Motor_2 Forward Direction");
 }
 
 void MotorControl::backward_both_motors() {
